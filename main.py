@@ -15,7 +15,9 @@ WINDOW_HEIGHT = 800
 
 screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 pygame.display.set_caption('CS2D')
-player_image = (pygame.image.load('arrow.png'))
+player_image = pygame.image.load('arrow.png')
+enemy_image = pygame.image.load('arrow_enemy.png')
+ally_image = pygame.image.load('arrow_ally.png')
 cursor_image = pygame.image.load('cursor.png')
 background_image = pygame.image.load('background.png')
 
@@ -41,6 +43,8 @@ class Player:
         self.name = 'name'
         self.pos_x = 400
         self.pos_y = 400
+        self.angle = 0
+        self.is_shooting = 0
         self.velocity_x = 0
         self.velocity_y = 0
 
@@ -57,11 +61,13 @@ class Player:
         # połowa szerokości gracza, aby obracać się wokół środka obrazka
         rel_x, rel_y = mouse_x - WINDOW_WIDTH//2 - player_image.get_width()//2, mouse_y - WINDOW_HEIGHT//2 - player_image.get_height()//2
         angle = (90 / math.pi) * -math.atan2(rel_y, rel_x)
+        self.angle = angle
         rotated_player_image = pygame.transform.rotate(player_image, int(angle))
         rotated_image = pygame.transform.rotate(rotated_player_image, angle)
         new_rect = rotated_image.get_rect(center=player_image.get_rect(topleft=topleft).center)
 
         return rotated_image, new_rect
+
 
 player = Player()
 
@@ -87,12 +93,17 @@ class Connection():
         return server_response
 
 
-def draw_scene():
+connection = Connection()
+
+
+def draw_scene(game_status):
     screen.blit(background_image, (0, 0), (player.pos_x - WINDOW_WIDTH // 2, player.pos_y - WINDOW_HEIGHT // 2, WINDOW_WIDTH, WINDOW_HEIGHT))
     cursor_image_rect.center = pygame.mouse.get_pos()
     new_image, new_rect = player.rotate((WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2))
     screen.blit(new_image, new_rect)
     screen.blit(cursor_image, cursor_image_rect)
+    if player.is_shooting == 1:
+        pygame.draw.line(screen, WHITE, (WINDOW_WIDTH//2 + player_image.get_width()//2, WINDOW_HEIGHT//2 + player_image.get_height()//2), pygame.mouse.get_pos(), 2)
     pygame.display.update()
 
 
@@ -121,19 +132,31 @@ def game_loop():
                     player.velocity_x = 0
                 if event.key == pygame.K_d:
                     player.velocity_x = 0
-        player.move()
-        draw_scene()
-        clock.tick(60)
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_presses = pygame.mouse.get_pressed()
+                if mouse_presses[0]:
+                    player.is_shooting = 1
+            if event.type == pygame.MOUSEBUTTONUP:
+                mouse_presses = pygame.mouse.get_pressed()
+                if mouse_presses[0] == 0:
+                    player.is_shooting = 0
 
+        player.move()
+        clock.tick(60)
+        game_status = connection.call_server("1:" + str(player.pos_x) + "," + str(player.pos_y) + "," + str(player.angle) + "," + str(player.is_shooting))
+        draw_scene(game_status)
+        print(player.pos_x, player.pos_y)
 
 root = Tk()
 
-connection = Connection()
+
 
 def join_game(name_var):
     connection.call_server(name_var.get())
     root.destroy()
-    #connection.call_server()
+    connection.call_server()
+    player.name = name_var.get()
+
 
 def login_screen():
     name_var = tkinter.StringVar(root, value='username')
