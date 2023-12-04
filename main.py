@@ -29,15 +29,12 @@ cursor_image = pygame.transform.scale_by(cursor_image, 0.1)
 cursor_image_rect = cursor_image.get_rect()
 player_image_rect = player_image.get_rect()
 
-
 pygame.mouse.set_visible(False)
 clock = pygame.time.Clock()
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 run = True
-
-
 class Player:
     def __init__(self):
         self.name = 'name'
@@ -67,11 +64,6 @@ class Player:
         new_rect = rotated_image.get_rect(center=player_image.get_rect(topleft=topleft).center)
 
         return rotated_image, new_rect
-
-
-player = Player()
-
-
 class Connection():
     def __init__(self):
         self.host = "127.0.0.1"
@@ -92,10 +84,6 @@ class Connection():
         server_response = self.socket.recv(received_uint16).decode()
         return server_response
 
-
-connection = Connection()
-
-
 def draw_scene(game_status):
     screen.blit(background_image, (0, 0), (player.pos_x - WINDOW_WIDTH // 2, player.pos_y - WINDOW_HEIGHT // 2, WINDOW_WIDTH, WINDOW_HEIGHT))
     cursor_image_rect.center = pygame.mouse.get_pos()
@@ -106,51 +94,56 @@ def draw_scene(game_status):
         pygame.draw.line(screen, WHITE, (WINDOW_WIDTH//2 + player_image.get_width()//2, WINDOW_HEIGHT//2 + player_image.get_height()//2), pygame.mouse.get_pos(), 2)
     pygame.display.update()
 
+def get_input():
+    global player
+    global run
+    global game_restart
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            run = False
+            game_restart = False
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_w:
+                player.velocity_y = -1
+            if event.key == pygame.K_s:
+                player.velocity_y = 1
+            if event.key == pygame.K_a:
+                player.velocity_x = -1
+            if event.key == pygame.K_d:
+                player.velocity_x = 1
+        if event.type == pygame.KEYUP:
+            if event.key == pygame.K_w:
+                player.velocity_y = 0
+            if event.key == pygame.K_s:
+                player.velocity_y = 0
+            if event.key == pygame.K_a:
+                player.velocity_x = 0
+            if event.key == pygame.K_d:
+                player.velocity_x = 0
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            mouse_presses = pygame.mouse.get_pressed()
+            if mouse_presses[0]:
+                player.is_shooting = 1
+        if event.type == pygame.MOUSEBUTTONUP:
+            mouse_presses = pygame.mouse.get_pressed()
+            if mouse_presses[0] == 0:
+                player.is_shooting = 0
 
 def game_loop():
+    i=0
     global run, game_restart
     while run:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                run = False
-                game_restart = False
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_w:
-                    player.velocity_y = -1
-                if event.key == pygame.K_s:
-                    player.velocity_y = 1
-                if event.key == pygame.K_a:
-                    player.velocity_x = -1
-                if event.key == pygame.K_d:
-                    player.velocity_x = 1
-            if event.type == pygame.KEYUP:
-                if event.key == pygame.K_w:
-                    player.velocity_y = 0
-                if event.key == pygame.K_s:
-                    player.velocity_y = 0
-                if event.key == pygame.K_a:
-                    player.velocity_x = 0
-                if event.key == pygame.K_d:
-                    player.velocity_x = 0
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                mouse_presses = pygame.mouse.get_pressed()
-                if mouse_presses[0]:
-                    player.is_shooting = 1
-            if event.type == pygame.MOUSEBUTTONUP:
-                mouse_presses = pygame.mouse.get_pressed()
-                if mouse_presses[0] == 0:
-                    player.is_shooting = 0
-
+        get_input()
         player.move()
         clock.tick(60)
-        game_status = connection.call_server("1:" + str(player.pos_x) + "," + str(player.pos_y) + "," + str(player.angle) + "," + str(player.is_shooting))
+        if i%20==0:
+            i=0
+            game_status = connection.call_server("1:" + str(player.pos_x) + "," + str(player.pos_y) + "," + str(player.angle) + "," + str(player.is_shooting))
         draw_scene(game_status)
         print(player.pos_x, player.pos_y)
+        i+=1
 
 root = Tk()
-
-
-
 def join_game(name_var):
     connection.call_server(name_var.get())
     root.destroy()
@@ -169,7 +162,8 @@ def login_screen():
     enter_button.place(relx=0.5, rely=0.5, anchor=CENTER)
     root.mainloop()
 
-
+player = Player()
+connection = Connection()
 login_screen()
 game_restart = True
 while game_restart:
