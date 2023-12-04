@@ -96,14 +96,19 @@ def draw_scene(game_status):
     new_image, new_rect = player.rotate((WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2))
     screen.blit(new_image, new_rect)
     screen.blit(cursor_image, cursor_image_rect)
-    players_data = [el.split(",") for el in game_status.split(";")]
-    for tab in players_data:
-        if tab[2] == 1:
-            ally_image = pygame.transform.rotate(ally_image, int(tab[6]))
-            screen.blit(ally_image, (400 - (player.pos_x - float(tab[4])), 400 - (player.pos_y - float(tab[5]))))
-        if tab[2] == 0:
-            enemy_image = pygame.transform.rotate(enemy_image, int(tab[6]))
-            screen.blit(ally_image, (400 - (player.pos_x - float(tab[4])), 400 - (player.pos_y - float(tab[5]))))
+    players = game_status.split(";")
+    # players_data = [el.split(",") for el in game_status.split(";")]
+    for pl in players:
+        if len(pl) == 0:
+            continue
+        player_data = pl.split(',')
+        if player_data[2] == 1:
+            ally_image = pygame.transform.rotate(ally_image, int(player_data[6]))
+            screen.blit(ally_image, (400 - (player.pos_x - float(player_data[4])), 400 - (player.pos_y - float(player_data[5]))))
+        if player_data[2] == 0:
+            enemy_image = pygame.transform.rotate(enemy_image, int(player_data[6]))
+            screen.blit(ally_image, (400 - (player.pos_x - float(player_data[4])), 400 - (player.pos_y - float(player_data[5]))))
+
     if player.is_shooting == 1:
         pygame.draw.line(screen, WHITE, (WINDOW_WIDTH//2 + player_image.get_width()//2, WINDOW_HEIGHT//2 + player_image.get_height()//2), pygame.mouse.get_pos(), 2)
     pygame.display.update()
