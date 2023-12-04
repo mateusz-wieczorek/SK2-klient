@@ -25,6 +25,10 @@ pygame.display.set_icon(player_image)
 
 player_image = pygame.transform.rotate(player_image, 90)
 player_image = pygame.transform.scale_by(player_image, 0.1)
+enemy_image = pygame.transform.rotate(enemy_image, 90)
+enemy_image = pygame.transform.scale_by(enemy_image, 0.1)
+ally_image = pygame.transform.rotate(ally_image, 90)
+ally_image = pygame.transform.scale_by(ally_image, 0.1)
 cursor_image = pygame.transform.scale_by(cursor_image, 0.1)
 cursor_image_rect = cursor_image.get_rect()
 player_image_rect = player_image.get_rect()
@@ -85,11 +89,21 @@ class Connection():
         return server_response
 
 def draw_scene(game_status):
+    global ally_image
+    global enemy_image
     screen.blit(background_image, (0, 0), (player.pos_x - WINDOW_WIDTH // 2, player.pos_y - WINDOW_HEIGHT // 2, WINDOW_WIDTH, WINDOW_HEIGHT))
     cursor_image_rect.center = pygame.mouse.get_pos()
     new_image, new_rect = player.rotate((WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2))
     screen.blit(new_image, new_rect)
     screen.blit(cursor_image, cursor_image_rect)
+    players_data = [el.split(",") for el in game_status.split(";")]
+    for tab in players_data:
+        if tab[2] == 1:
+            ally_image = pygame.transform.rotate(ally_image, int(tab[6]))
+            screen.blit(ally_image, (400 - (player.pos_x - float(tab[4])), 400 - (player.pos_y - float(tab[5]))))
+        if tab[2] == 0:
+            enemy_image = pygame.transform.rotate(enemy_image, int(tab[6]))
+            screen.blit(ally_image, (400 - (player.pos_x - float(tab[4])), 400 - (player.pos_y - float(tab[5]))))
     if player.is_shooting == 1:
         pygame.draw.line(screen, WHITE, (WINDOW_WIDTH//2 + player_image.get_width()//2, WINDOW_HEIGHT//2 + player_image.get_height()//2), pygame.mouse.get_pos(), 2)
     pygame.display.update()
