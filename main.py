@@ -1,7 +1,12 @@
+import time
+import tkinter
+
 import pygame
 import math
 import socket
 import struct
+from tkinter import *
+from functools import partial
 
 pygame.init()
 
@@ -60,12 +65,14 @@ class Player:
 
 player = Player()
 
+
 class Connection():
     def __init__(self):
         self.host = "127.0.0.1"
         self.port = 4000
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.connect((self.host, self.port))
+
     def __del__(self):
         self.socket.close()
 
@@ -78,6 +85,16 @@ class Connection():
         received_uint16 = struct.unpack('!H', received_data_length)[0]
         server_response = self.socket.recv(received_uint16).decode()
         return server_response
+
+
+def draw_scene():
+    screen.blit(background_image, (0, 0), (player.pos_x - WINDOW_WIDTH // 2, player.pos_y - WINDOW_HEIGHT // 2, WINDOW_WIDTH, WINDOW_HEIGHT))
+    cursor_image_rect.center = pygame.mouse.get_pos()
+    new_image, new_rect = player.rotate((WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2))
+    screen.blit(new_image, new_rect)
+    screen.blit(cursor_image, cursor_image_rect)
+    pygame.display.update()
+
 
 def game_loop():
     global run, game_restart
@@ -105,14 +122,32 @@ def game_loop():
                 if event.key == pygame.K_d:
                     player.velocity_x = 0
         player.move()
-        screen.blit(background_image, (0, 0), (player.pos_x - WINDOW_WIDTH//2, player.pos_y - WINDOW_HEIGHT//2, WINDOW_WIDTH, WINDOW_HEIGHT))
-        cursor_image_rect.center = pygame.mouse.get_pos()
-        new_image, new_rect = player.rotate((WINDOW_WIDTH//2, WINDOW_HEIGHT//2))
-        screen.blit(new_image, new_rect)
-        screen.blit(cursor_image, cursor_image_rect)
+        draw_scene()
         clock.tick(60)
-        pygame.display.update()
 
+
+root = Tk()
+
+connection = Connection()
+
+def join_game(name_var):
+    connection.call_server(name_var.get())
+    root.destroy()
+    #connection.call_server()
+
+def login_screen():
+    name_var = tkinter.StringVar(root, value='username')
+    root.geometry("400x400")
+    name_entry = Entry(root, textvariable=name_var)
+    name_entry.place(relx=0.5, rely=0.4, anchor=CENTER)
+    name_label = Label(root, text="Username", font=("Helvetica", 11))
+    name_label.place(relx=0.5, rely=0.3, anchor=CENTER)
+    enter_button = Button(root, text="Join the game!", command=partial(join_game, name_var))
+    enter_button.place(relx=0.5, rely=0.5, anchor=CENTER)
+    root.mainloop()
+
+
+login_screen()
 game_restart = True
 while game_restart:
     game_loop()
