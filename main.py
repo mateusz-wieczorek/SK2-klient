@@ -1,5 +1,7 @@
 import pygame
 import math
+import socket
+import struct
 
 pygame.init()
 
@@ -58,6 +60,24 @@ class Player:
 
 player = Player()
 
+class Connection():
+    def __init__(self):
+        self.host = "127.0.0.1"
+        self.port = 4000
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket.connect((self.host, self.port))
+    def __del__(self):
+        self.socket.close()
+
+    def call_server(self, message):
+        message_length = len(message)
+        encoded_message_length = struct.pack('!H', message_length)
+        self.socket.send(encoded_message_length)
+        self.socket.send(message.encode())
+        received_data_length = self.socket.recv(2)
+        received_uint16 = struct.unpack('!H', received_data_length)[0]
+        server_response = self.socket.recv(received_uint16).decode()
+        return server_response
 
 def game_loop():
     global run, game_restart
