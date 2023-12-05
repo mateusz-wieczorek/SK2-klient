@@ -102,12 +102,15 @@ def draw_scene(game_status):
         if len(pl) == 0:
             continue
         player_data = pl.split(',')
-        if player_data[2] == 1:
-            ally_image = pygame.transform.rotate(ally_image, int(player_data[6]))
-            screen.blit(ally_image, (400 - (player.pos_x - float(player_data[4])), 400 - (player.pos_y - float(player_data[5]))))
-        if player_data[2] == 0:
-            enemy_image = pygame.transform.rotate(enemy_image, int(player_data[6]))
-            screen.blit(ally_image, (400 - (player.pos_x - float(player_data[4])), 400 - (player.pos_y - float(player_data[5]))))
+        if player_data[1] != player.name:
+            screen.blit(enemy_image,  (400 - (player.pos_x - float(player_data[4])), 400 - (player.pos_y - float(player_data[5]))))
+        print(player_data)
+        # if player_data[2] == 1:
+        #     ally_image = pygame.transform.rotate(ally_image, int(player_data[6]))
+        #     screen.blit(ally_image, (400 - (player.pos_x - float(player_data[4])), 400 - (player.pos_y - float(player_data[5]))))
+        # if player_data[2] == 0:
+        #     enemy_image = pygame.transform.rotate(enemy_image, int(player_data[6]))
+        #     screen.blit(ally_image, (400 - (player.pos_x - float(player_data[4])), 400 - (player.pos_y - float(player_data[5]))))
 
     if player.is_shooting == 1:
         pygame.draw.line(screen, WHITE, (WINDOW_WIDTH//2 + player_image.get_width()//2, WINDOW_HEIGHT//2 + player_image.get_height()//2), pygame.mouse.get_pos(), 2)
@@ -166,7 +169,6 @@ root = Tk()
 def join_game(name_var):
     connection.call_server(name_var.get())
     root.destroy()
-    connection.call_server()
     player.name = name_var.get()
 
 
