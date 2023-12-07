@@ -8,6 +8,8 @@ import struct
 from tkinter import *
 from functools import partial
 
+from threading import Thread
+
 pygame.init()
 
 WINDOW_WIDTH = 800
@@ -152,18 +154,14 @@ def get_input():
                 player.is_shooting = 0
 
 def game_loop():
-    i=0
+    global game_status
     global run, game_restart
     while run:
         get_input()
         player.move()
         clock.tick(60)
-        if i%20==0:
-            i=0
-            game_status = connection.call_server("1:" + str(player.pos_x) + "," + str(player.pos_y) + "," + str(player.angle) + "," + str(player.is_shooting))
         draw_scene(game_status)
         print(player.pos_x, player.pos_y)
-        i+=1
 
 root = Tk()
 def join_game(name_var):
@@ -183,11 +181,29 @@ def login_screen():
     enter_button.place(relx=0.5, rely=0.5, anchor=CENTER)
     root.mainloop()
 
+def communicate_with_server():
+    global game_status
+    global connection
+    global game_restart
+    while game_restart:
+        game_status = connection.call_server(
+            "1:" + str(player.pos_x) + "," + str(player.pos_y) + "," + str(player.angle) + "," + str(
+                player.is_shooting))
+    connection.call_server("2")
+
+
+
 player = Player()
 connection = Connection()
 login_screen()
 game_restart = True
+game_status = ""
+
+server_communication_thread = Thread(target=communicate_with_server)
+server_communication_thread.start()
 while game_restart:
     game_loop()
+server_communication_thread.join()
+
 pygame.quit()
 quit()
