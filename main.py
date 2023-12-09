@@ -41,6 +41,8 @@ clock = pygame.time.Clock()
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 run = True
+
+
 class Player:
     def __init__(self):
         self.name = 'name'
@@ -50,6 +52,7 @@ class Player:
         self.is_shooting = 0
         self.velocity_x = 0
         self.velocity_y = 0
+        self.team = 0
 
     def move(self):
         self.pos_x = min(max(self.velocity_x * 10 + self.pos_x, 0 + WINDOW_WIDTH//2), background_image.get_width() -
@@ -70,6 +73,17 @@ class Player:
         new_rect = rotated_image.get_rect(center=player_image.get_rect(topleft=topleft).center)
 
         return rotated_image, new_rect
+
+
+def rotate_other_player(topleft, angle):
+    global ally_image
+    global enemy_image
+    rotated_player_image = pygame.transform.rotate(enemy_image, int(float(angle)))
+    rotated_image = pygame.transform.rotate(rotated_player_image, angle)
+    new_rect = rotated_image.get_rect(center=enemy_image.get_rect(topleft=topleft).center)
+    return rotated_image, new_rect
+
+
 class Connection():
     def __init__(self):
         self.host = "127.0.0.1"
@@ -105,7 +119,8 @@ def draw_scene(game_status):
             continue
         player_data = pl.split(',')
         if player_data[1] != player.name:
-            screen.blit(enemy_image,  (400 - (player.pos_x - float(player_data[4])), 400 - (player.pos_y - float(player_data[5]))))
+            rotatated_image, new_rect = rotate_other_player((400 - (player.pos_x - float(player_data[4])), 400 - (player.pos_y - float(player_data[5]))), int(float(player_data[6])))
+            screen.blit(rotatated_image, new_rect)
         print(player_data)
         # if player_data[2] == 1:
         #     ally_image = pygame.transform.rotate(ally_image, int(player_data[6]))
@@ -117,6 +132,7 @@ def draw_scene(game_status):
     if player.is_shooting == 1:
         pygame.draw.line(screen, WHITE, (WINDOW_WIDTH//2 + player_image.get_width()//2, WINDOW_HEIGHT//2 + player_image.get_height()//2), pygame.mouse.get_pos(), 2)
     pygame.display.update()
+
 
 def get_input():
     global player
@@ -153,6 +169,7 @@ def get_input():
             if mouse_presses[0] == 0:
                 player.is_shooting = 0
 
+
 def game_loop():
     global game_status
     global run, game_restart
@@ -163,7 +180,10 @@ def game_loop():
         draw_scene(game_status)
         print(player.pos_x, player.pos_y)
 
+
 root = Tk()
+
+
 def join_game(name_var):
     connection.call_server(name_var.get())
     root.destroy()
@@ -181,6 +201,7 @@ def login_screen():
     enter_button.place(relx=0.5, rely=0.5, anchor=CENTER)
     root.mainloop()
 
+
 def communicate_with_server():
     global game_status
     global connection
@@ -190,7 +211,6 @@ def communicate_with_server():
             "1:" + str(player.pos_x) + "," + str(player.pos_y) + "," + str(player.angle) + "," + str(
                 player.is_shooting))
     connection.call_server("2")
-
 
 
 player = Player()
