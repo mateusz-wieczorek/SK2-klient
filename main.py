@@ -43,7 +43,7 @@ WHITE = (255, 255, 255)
 run = True
 
 obstacles_centers = [(650, 650), (950, 1750), (1600, 1000), (2050, 2050), (1100, 2500)]
-obstacles_radius = (150, 450, 400, 350, 200)
+obstacles_radius = [150, 450, 400, 350, 200]
 
 
 class Player:
@@ -58,6 +58,16 @@ class Player:
         self.team = 0
 
     def move(self):
+        obstacles_centers = [(650, 650), (950, 1750), (1600, 1000), (2050, 2050), (1100, 2500)]
+        obstacles_radius = [150, 450, 400, 350, 200]
+        players = game_status.split(";")
+        for pl in players:
+            if len(pl) == 0:
+                continue
+            player_data = pl.split(',')
+            if player_data[1] != player.name:
+                obstacles_centers.append((int(float(player_data[4])) + 38, int(float(player_data[5])) + 38))
+                obstacles_radius.append(38)
         not_collided = 0
         temp_x = min(max(self.velocity_x * 10 + self.pos_x, 0 + WINDOW_WIDTH//2), background_image.get_width() -
                              WINDOW_WIDTH//2 - player_image.get_width())
@@ -70,6 +80,7 @@ class Player:
                 break
             else:
                 not_collided += 1
+
         if not_collided == len(obstacles_centers):
             self.pos_x = temp_x
             self.pos_y = temp_y
@@ -132,8 +143,8 @@ def draw_scene(game_status):
             continue
         player_data = pl.split(',')
         if player_data[1] != player.name:
-            rotatated_image, new_rect = rotate_other_player((400 - (player.pos_x - float(player_data[4])), 400 - (player.pos_y - float(player_data[5]))), int(float(player_data[6])))
-            screen.blit(rotatated_image, new_rect)
+            rotated_image, new_rect = rotate_other_player((400 - (player.pos_x - float(player_data[4])), 400 - (player.pos_y - float(player_data[5]))), int(float(player_data[6])))
+            screen.blit(rotated_image, new_rect)
         #print(player_data)
         # if player_data[2] == 1:
         #     ally_image = pygame.transform.rotate(ally_image, int(player_data[6]))
