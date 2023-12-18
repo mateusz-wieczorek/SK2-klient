@@ -42,6 +42,9 @@ BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 run = True
 
+obstacles_centers = [(650, 650), (950, 1750), (1600, 1000), (2050, 2050), (1100, 2500)]
+obstacles_radius = (150, 450, 400, 350, 200)
+
 
 class Player:
     def __init__(self):
@@ -55,11 +58,21 @@ class Player:
         self.team = 0
 
     def move(self):
-        self.pos_x = min(max(self.velocity_x * 10 + self.pos_x, 0 + WINDOW_WIDTH//2), background_image.get_width() -
-                         WINDOW_WIDTH//2 - player_image.get_width())  #min i max aby nie wyjść poza ekran
-        self.pos_y = min(max(self.velocity_y * 10 + self.pos_y, 0 + WINDOW_HEIGHT//2), background_image. get_height() -
-                         WINDOW_HEIGHT//2 - player_image.get_height())
-        #print(self.pos_x, self.pos_y, pygame.mouse.get_pos())
+        not_collided = 0
+        temp_x = min(max(self.velocity_x * 10 + self.pos_x, 0 + WINDOW_WIDTH//2), background_image.get_width() -
+                             WINDOW_WIDTH//2 - player_image.get_width())
+        temp_y = min(max(self.velocity_y * 10 + self.pos_y, 0 + WINDOW_HEIGHT//2), background_image. get_height() -
+                             WINDOW_HEIGHT//2 - player_image.get_height())
+        for i in range(len(obstacles_centers)):
+            if (temp_x + player_image.get_width() / 2 - obstacles_centers[i][0]) ** 2 + (
+                    temp_y + player_image.get_height() / 2 - obstacles_centers[i][1]) ** 2 < (
+                    obstacles_radius[i] + player_image.get_height() / 2) ** 2:
+                break
+            else:
+                not_collided += 1
+        if not_collided == len(obstacles_centers):
+            self.pos_x = temp_x
+            self.pos_y = temp_y
 
     def rotate(self,  topleft):
         global player_image
@@ -121,7 +134,7 @@ def draw_scene(game_status):
         if player_data[1] != player.name:
             rotatated_image, new_rect = rotate_other_player((400 - (player.pos_x - float(player_data[4])), 400 - (player.pos_y - float(player_data[5]))), int(float(player_data[6])))
             screen.blit(rotatated_image, new_rect)
-        print(player_data)
+        #print(player_data)
         # if player_data[2] == 1:
         #     ally_image = pygame.transform.rotate(ally_image, int(player_data[6]))
         #     screen.blit(ally_image, (400 - (player.pos_x - float(player_data[4])), 400 - (player.pos_y - float(player_data[5]))))
@@ -178,7 +191,7 @@ def game_loop():
         player.move()
         clock.tick(60)
         draw_scene(game_status)
-        print(player.pos_x, player.pos_y)
+        #print(player.pos_x, player.pos_y)
 
 
 root = Tk()
