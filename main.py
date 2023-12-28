@@ -65,8 +65,8 @@ class Player:
             if len(pl) == 0:
                 continue
             player_data = pl.split(',')
-            if player_data[3] != player.name:
-                obstacles_centers.append((int(float(player_data[6])) + 38, int(float(player_data[7])) + 38))
+            if player_data[1] != player.name:
+                obstacles_centers.append((int(float(player_data[4])) + 38, int(float(player_data[5])) + 38))
                 obstacles_radius.append(38)
         not_collided = 0
         temp_x = min(max(self.velocity_x * 10 + self.pos_x, 0 + WINDOW_WIDTH//2), background_image.get_width() -
@@ -142,8 +142,8 @@ def draw_scene(game_status):
         if len(pl) == 0:
             continue
         player_data = pl.split(',')
-        if player_data[3] != player.name:
-            rotated_image, new_rect = rotate_other_player((400 - (player.pos_x - float(player_data[6])), 400 - (player.pos_y - float(player_data[7]))), int(float(player_data[8])))
+        if player_data[1] != player.name:
+            rotated_image, new_rect = rotate_other_player((400 - (player.pos_x - float(player_data[4])), 400 - (player.pos_y - float(player_data[5]))), int(float(player_data[6])))
             screen.blit(rotated_image, new_rect)
 
     if player.is_shooting == 1:
@@ -191,6 +191,7 @@ def game_loop():
     global game_status
     global run, game_restart
     while run:
+        print(game_status)
         get_input()
         player.move()
         clock.tick(60)
@@ -222,6 +223,7 @@ def communicate_with_server():
     global game_status
     global connection
     global game_restart
+    game_status = connection.call_server("3")
     while game_restart:
         game_status = connection.call_server(
             "1:" + str(player.pos_x) + "," + str(player.pos_y) + "," + str(player.angle) + "," + str(
