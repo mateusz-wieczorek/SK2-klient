@@ -60,7 +60,7 @@ class Player:
     def move(self):
         obstacles_centers = [(650, 650), (950, 1750), (1600, 1000), (2050, 2050), (1100, 2500)]
         obstacles_radius = [150, 450, 400, 350, 200]
-        players = game_status.split(";")[2:-2]
+        players = game_status.split(";")[2:-1]
         for pl in players:
             if len(pl) == 0:
                 continue
@@ -136,7 +136,7 @@ def draw_scene(game_status):
     new_image, new_rect = player.rotate((WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2))
     screen.blit(new_image, new_rect)
     screen.blit(cursor_image, cursor_image_rect)
-    players = game_status.split(";")[2:-2]
+    players = game_status.split(";")[2:-1]
     # players_data = [el.split(",") for el in game_status.split(";")]
     for pl in players:
         if len(pl) == 0:
@@ -148,6 +148,16 @@ def draw_scene(game_status):
 
     if player.is_shooting == 1:
         pygame.draw.line(screen, WHITE, (WINDOW_WIDTH//2 + player_image.get_width()//2, WINDOW_HEIGHT//2 + player_image.get_height()//2), pygame.mouse.get_pos(), 2)
+
+    font = pygame.font.Font('freesansbold.ttf', 32)
+    try:
+        text = font.render(game_status.split(";")[1], False, WHITE, BLACK)
+    except:
+        text = font.render('waiting', False, WHITE, BLACK)
+    textRect = text.get_rect()
+
+    textRect.center = (WINDOW_WIDTH // 2, 20)
+    screen.blit(text, textRect)
     pygame.display.update()
 
 
@@ -223,8 +233,8 @@ def communicate_with_server():
     global game_status
     global connection
     global game_restart
-    game_status = connection.call_server("3")
     while game_restart:
+        game_status = connection.call_server("3")
         game_status = connection.call_server(
             "1:" + str(player.pos_x) + "," + str(player.pos_y) + "," + str(player.angle) + "," + str(
                 player.is_shooting))
