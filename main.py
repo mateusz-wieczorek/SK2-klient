@@ -134,6 +134,8 @@ class Connection():
 def draw_scene(game_status):
     global ally_image
     global enemy_image
+    team_0_points = 0
+    team_1_points = 0
     screen.blit(background_image, (0, 0), (player.pos_x - WINDOW_WIDTH // 2, player.pos_y - WINDOW_HEIGHT // 2, WINDOW_WIDTH, WINDOW_HEIGHT))
     cursor_image_rect.center = pygame.mouse.get_pos()
     new_image, new_rect = player.rotate((WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2))
@@ -147,24 +149,40 @@ def draw_scene(game_status):
         player_data = pl.split(',')
         if player_data[1] == player.name:
             player.team = player_data[2]
-            print(player_data)
-            print(player.team)
+            #print(player_data)
+            #print(player.team)
         if player_data[1] != player.name:
             rotated_image, new_rect = rotate_other_player((400 - (player.pos_x - float(player_data[4])), 400 - (player.pos_y - float(player_data[5]))), int(float(player_data[6])), player_data[2])
             screen.blit(rotated_image, new_rect)
-
+        if player_data[2] == '0':
+            team_0_points += int(player_data[8])
+            print(0)
+        if player_data[2] == '1':
+            team_1_points += int(player_data[8])
+            print(1)
     if player.is_shooting == 1:
         pygame.draw.line(screen, WHITE, (WINDOW_WIDTH//2 + player_image.get_width()//2, WINDOW_HEIGHT//2 + player_image.get_height()//2), pygame.mouse.get_pos(), 2)
 
-    font = pygame.font.Font('freesansbold.ttf', 32)
+    font = pygame.font.Font('freesansbold.ttf', 16)
     try:
-        text = font.render(game_status.split(";")[1], False, WHITE, BLACK)
+        text = font.render('TIME LEFT: ' + game_status.split(";")[1], False, WHITE, BLACK)
     except:
         text = font.render('waiting', False, WHITE, BLACK)
     textRect = text.get_rect()
-
     textRect.center = (WINDOW_WIDTH // 2, 20)
     screen.blit(text, textRect)
+    your_team_text = font.render('YOU ARE TEAM ' + str(player.team), False, WHITE, BLACK)
+    your_team_text_rect = your_team_text.get_rect()
+    your_team_text_rect.center = (WINDOW_WIDTH//2, 40)
+    screen.blit(your_team_text, your_team_text_rect)
+    team_0_points_text = font.render('TEAM 0 POINTS: ' + str(team_0_points), False, WHITE, BLACK)
+    team_0_points_text_rect = team_0_points_text.get_rect()
+    team_0_points_text_rect.center = (120, 20)
+    screen.blit(team_0_points_text, team_0_points_text_rect)
+    team_1_points_text = font.render('TEAM 1 POINTS: ' + str(team_1_points), False, WHITE, BLACK)
+    team_1_points_text_rect = team_0_points_text.get_rect()
+    team_1_points_text_rect.center = (WINDOW_WIDTH - 120, 20)
+    screen.blit(team_1_points_text, team_1_points_text_rect)
     pygame.display.update()
 
 
