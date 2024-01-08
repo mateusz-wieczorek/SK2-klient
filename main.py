@@ -99,10 +99,13 @@ class Player:
         return rotated_image, new_rect
 
 
-def rotate_other_player(topleft, angle):
+def rotate_other_player(topleft, angle, team):
     global ally_image
     global enemy_image
-    rotated_player_image = pygame.transform.rotate(enemy_image, int(float(angle)))
+    if player.team == team:
+        rotated_player_image = pygame.transform.rotate(ally_image, int(float(angle)))
+    else:
+        rotated_player_image = pygame.transform.rotate(enemy_image, int(float(angle)))
     rotated_image = pygame.transform.rotate(rotated_player_image, angle)
     new_rect = rotated_image.get_rect(center=enemy_image.get_rect(topleft=topleft).center)
     return rotated_image, new_rect
@@ -142,8 +145,12 @@ def draw_scene(game_status):
         if len(pl) == 0:
             continue
         player_data = pl.split(',')
+        if player_data[1] == player.name:
+            player.team = player_data[2]
+            print(player_data)
+            print(player.team)
         if player_data[1] != player.name:
-            rotated_image, new_rect = rotate_other_player((400 - (player.pos_x - float(player_data[4])), 400 - (player.pos_y - float(player_data[5]))), int(float(player_data[6])))
+            rotated_image, new_rect = rotate_other_player((400 - (player.pos_x - float(player_data[4])), 400 - (player.pos_y - float(player_data[5]))), int(float(player_data[6])), player_data[2])
             screen.blit(rotated_image, new_rect)
 
     if player.is_shooting == 1:
