@@ -156,10 +156,10 @@ def draw_scene(game_status):
             screen.blit(rotated_image, new_rect)
         if player_data[2] == '0':
             team_0_points += int(player_data[8])
-            print(0)
+            #print(0)
         if player_data[2] == '1':
             team_1_points += int(player_data[8])
-            print(1)
+            #print(1)
     if player.is_shooting == 1:
         pygame.draw.line(screen, WHITE, (WINDOW_WIDTH//2 + player_image.get_width()//2, WINDOW_HEIGHT//2 + player_image.get_height()//2), pygame.mouse.get_pos(), 2)
 
@@ -259,10 +259,21 @@ def communicate_with_server():
     global connection
     global game_restart
     while game_restart:
+        last_x = player.pos_x
+        last_y = player.pos_y
         game_status = connection.call_server("3")
         game_status = connection.call_server(
-            "1:" + str(player.pos_x) + "," + str(player.pos_y) + "," + str(player.angle) + "," + str(
+            "1:" + str(last_x) + "," + str(last_y) + "," + str(player.angle) + "," + str(
                 player.is_shooting))
+        players = game_status.split(";")[2:-1]
+        for pl in players:
+            player_data = pl.split(',')
+            if player_data[1] == player.name:
+                if abs(last_x - float(player_data[4])) > 1:
+                    player.pos_x =  float(player_data[4])
+                    print('cos')
+                if abs(last_y - float(player_data[5])) > 1:
+                    player.pos_y = float(player_data[5])
     connection.call_server("2")
 
 
