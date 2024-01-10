@@ -65,9 +65,9 @@ class Player:
             if len(pl) == 0:
                 continue
             player_data = pl.split(',')
-            if player_data[1] != player.name:
-                obstacles_centers.append((int(float(player_data[4])) + 38, int(float(player_data[5])) + 38))
-                obstacles_radius.append(38)
+            #if player_data[1] != player.name and player.team != player_data[2]:
+            #    obstacles_centers.append((int(float(player_data[4])) + 38, int(float(player_data[5])) + 38))
+            #    obstacles_radius.append(38)
         not_collided = 0
         temp_x = min(max(self.velocity_x * 10 + self.pos_x, 0 + WINDOW_WIDTH//2), background_image.get_width() -
                              WINDOW_WIDTH//2 - player_image.get_width())
