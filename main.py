@@ -40,7 +40,7 @@ clock = pygame.time.Clock()
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
-run = True
+run = False
 
 obstacles_centers = [(650, 650), (950, 1750), (1600, 1000), (2050, 2050), (1100, 2500)]
 obstacles_radius = [150, 450, 400, 350, 200]
@@ -232,27 +232,68 @@ def game_loop():
         clock.tick(60)
         draw_scene(game_status)
         #print(player.pos_x, player.pos_y)
-
+        if game_status.split(';')[0] == '0':
+            run = False
+            main_menu()
 root = Tk()
 
 
 def join_game(name_var):
-    connection.call_server(name_var.get())
-    root.destroy()
+    res = connection.call_server(name_var.get())
     player.name = name_var.get()
+    return res
+
+
+name_var = tkinter.StringVar
+
+
+def start_game(main_menu_window):
+    global run
+    run = True
+    connection.call_server("3")
+    main_menu_window.destroy()
 
 
 def login_screen():
+    global name_var, server_communication_thread
     name_var = tkinter.StringVar(root, value='username')
     root.geometry("400x400")
     name_entry = Entry(root, textvariable=name_var)
     name_entry.place(relx=0.5, rely=0.4, anchor=CENTER)
     name_label = Label(root, text="Username", font=("Helvetica", 11))
     name_label.place(relx=0.5, rely=0.3, anchor=CENTER)
-    enter_button = Button(root, text="Join the game!", command=partial(join_game, name_var))
+    enter_button = Button(root, text="Join the game!", command = main_menu)#command=partial(join_game, name_var)
     enter_button.place(relx=0.5, rely=0.5, anchor=CENTER)
     root.mainloop()
 
+
+def main_menu():
+    global root
+    try:
+        root.destroy()
+        main_menu_window = Tk()
+    except:
+        main_menu_window = Tk()
+    global game_status, name_var
+    #last_game_status = join_game(name_var)
+    main_menu_window.title("MAIN MENU")
+    main_menu_window.geometry("400x400")
+    #players = last_game_status.split(";")[2:-1]
+    # team_0_points = 0
+    # team_1_points = 0
+    # for pl in players:
+    #     if len(pl) < 3:
+    #         continue
+    #     player_data = pl.split(',')
+    #     if player_data[2] == '0':
+    #         team_0_points += int(player_data[8])
+    #     if player_data[2] == '1':
+    #         team_1_points += int(player_data[8])
+    # score_board_text = "Team 0 points: " + str(team_0_points) + "                  Team 1 points: " + str(team_1_points)
+    Label(main_menu_window, text= 'Press button to start a new game').pack()
+    btn = Button(main_menu_window, text="Start game", command=partial(start_game, main_menu_window))
+    btn.pack(pady=10)
+    mainloop()
 
 def communicate_with_server():
     global game_status
@@ -261,7 +302,6 @@ def communicate_with_server():
     while game_restart:
         last_x = player.pos_x
         last_y = player.pos_y
-        game_status = connection.call_server("3")
         game_status = connection.call_server(
             "1:" + str(last_x) + "," + str(last_y) + "," + str(player.angle) + "," + str(
                 player.is_shooting))
