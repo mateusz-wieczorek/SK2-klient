@@ -9,6 +9,7 @@ from tkinter import *
 from functools import partial
 
 from threading import Thread
+from tkinter import messagebox
 
 pygame.init()
 
@@ -113,13 +114,20 @@ def rotate_other_player(topleft, angle, team):
 
 class Connection():
     def __init__(self):
-        self.host = "127.0.0.1"
-        self.port = 4000
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.connect((self.host, self.port))
+        self.host = None
+        self.port = None
+        self.socket = None
 
     def __del__(self):
-        self.socket.close()
+        try:
+            self.socket.close()
+        except:
+            pass
+    def connect(self, address, port):
+        self.host = address
+        self.port = port
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket.connect((self.host, self.port))
 
     def call_server(self, message):
         message_length = len(message)
@@ -235,22 +243,52 @@ def game_loop():
 
 root = Tk()
 
+def on_closing():
+    if messagebox.askokcancel("Quit", "Do you want to quit?"):
+        root.destroy()
+        pygame.quit()
+        quit()
 
-def join_game(name_var):
-    connection.call_server(name_var.get())
-    root.destroy()
+root.protocol("WM_DELETE_WINDOW", on_closing)
+
+def join_game(name_var, address, port):
+    global connection
+    try:
+        connection.connect(str(address.get()), int(port.get()))
+    except:
+        error_label = Label(root, text="There is a problem with server, try again later", font=("Helvetica", 8))
+        error_label.place(relx=0.5, rely=0.8, anchor=CENTER)
+    response = connection.call_server(name_var.get())
+    if response[0] == 'E':
+        error_label = Label(root, text=response, font=("Helvetica", 8))
+        error_label.place(relx=0.5, rely=0.8, anchor=CENTER)
+    else:
+        root.destroy()
     player.name = name_var.get()
 
 
 def login_screen():
+
+    global connection
     name_var = tkinter.StringVar(root, value='username')
+    address_var = tkinter.StringVar(root, value='127.0.0.1')
+    port_var = tkinter.StringVar(root, value='4000')
     root.geometry("400x400")
-    name_entry = Entry(root, textvariable=name_var)
-    name_entry.place(relx=0.5, rely=0.4, anchor=CENTER)
     name_label = Label(root, text="Username", font=("Helvetica", 11))
-    name_label.place(relx=0.5, rely=0.3, anchor=CENTER)
-    enter_button = Button(root, text="Join the game!", command=partial(join_game, name_var))
-    enter_button.place(relx=0.5, rely=0.5, anchor=CENTER)
+    name_label.place(relx=0.5, rely=0.1, anchor=CENTER)
+    name_entry = Entry(root, textvariable=name_var)
+    name_entry.place(relx=0.5, rely=0.2, anchor=CENTER)
+    address_label = Label(root, text="Address", font=("Helvetica", 11))
+    address_label.place(relx=0.5, rely=0.3, anchor=CENTER)
+    address_entry = Entry(root, textvariable=address_var)
+    address_entry.place(relx=0.5, rely=0.4, anchor=CENTER)
+    port_label = Label(root, text="Port", font=("Helvetica", 11))
+    port_label.place(relx=0.5, rely=0.5, anchor=CENTER)
+    port_entry = Entry(root, textvariable=port_var)
+    port_entry.place(relx=0.5, rely=0.6, anchor=CENTER)
+
+    enter_button = Button(root, text="Join the game!", command=partial(join_game, name_var, address_var, port_var))
+    enter_button.place(relx=0.5, rely=0.7, anchor=CENTER)
     root.mainloop()
 
 
