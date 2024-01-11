@@ -123,6 +123,10 @@ class Connection():
         except:
             pass
     def connect(self, address, port):
+        try:
+            self.socket.close()
+        except:
+            pass
         self.host = address
         self.port = port
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -250,20 +254,25 @@ def on_closing():
 
 root.protocol("WM_DELETE_WINDOW", on_closing)
 
-def join_game(name_var, address, port):
+def join_game(name_var, address, port, error_label):
     global connection
     try:
         connection.connect(str(address.get()), int(port.get()))
     except:
-        error_label = Label(root, text="There is a problem with server, try again later", font=("Helvetica", 8))
-        error_label.place(relx=0.5, rely=0.8, anchor=CENTER)
-    response = connection.call_server(name_var.get())
-    if response[0] == 'E':
-        error_label = Label(root, text=response, font=("Helvetica", 8))
-        error_label.place(relx=0.5, rely=0.8, anchor=CENTER)
-    else:
-        root.destroy()
-    player.name = name_var.get()
+        error_label.config(text="There is a problem with server, try again later")
+        return False
+    try:
+        response = connection.call_server(name_var.get())
+        if response[0] == 'd':
+            error_label.config(text=response)
+        else:
+            root.destroy()
+            player.name = name_var.get()
+    except:
+        error_label.config(text="There is a problem with server, try again later")
+        return False
+    return True
+
 
 
 def login_screen():
@@ -285,9 +294,11 @@ def login_screen():
     port_label.place(relx=0.5, rely=0.5, anchor=CENTER)
     port_entry = Entry(root, textvariable=port_var)
     port_entry.place(relx=0.5, rely=0.6, anchor=CENTER)
-
-    enter_button = Button(root, text="Join the game!", command=partial(join_game, name_var, address_var, port_var))
+    error_label = Label(root, text="", font=("Helvetica", 8))
+    error_label.place(relx=0.5, rely=0.8, anchor=CENTER)
+    enter_button = Button(root, text="Join the game!", command=partial(join_game, name_var, address_var, port_var,error_label))
     enter_button.place(relx=0.5, rely=0.7, anchor=CENTER)
+
     root.mainloop()
 
 
