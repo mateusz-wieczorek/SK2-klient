@@ -1,6 +1,5 @@
 import time
 import tkinter
-
 import pygame
 import math
 import socket
@@ -168,8 +167,8 @@ def draw_scene(game_status):
         if player_data[2] == '1':
             team_1_points += int(player_data[8])
             #print(1)
-    if player.is_shooting == 1:
-        pygame.draw.line(screen, WHITE, (WINDOW_WIDTH//2 + player_image.get_width()//2, WINDOW_HEIGHT//2 + player_image.get_height()//2), pygame.mouse.get_pos(), 2)
+    #if player.is_shooting == 1:
+     #   pygame.draw.line(screen, WHITE, (WINDOW_WIDTH//2 + player_image.get_width()//2, WINDOW_HEIGHT//2 + player_image.get_height()//2), pygame.mouse.get_pos(), 2)
 
     font = pygame.font.Font('freesansbold.ttf', 16)
     try:
