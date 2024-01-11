@@ -129,6 +129,7 @@ class Connection():
         received_data_length = self.socket.recv(2)
         received_uint16 = struct.unpack('!H', received_data_length)[0]
         server_response = self.socket.recv(received_uint16).decode()
+        print(server_response)
         return server_response
 
 def draw_scene(game_status):
@@ -226,7 +227,7 @@ def game_loop():
     global game_status
     global run, game_restart
     while run:
-        print(game_status)
+        #print(game_status)
         get_input()
         player.move()
         clock.tick(60)
@@ -241,6 +242,7 @@ root = Tk()
 def join_game(name_var):
     res = connection.call_server(name_var.get())
     player.name = name_var.get()
+    main_menu()
     return res
 
 
@@ -262,7 +264,7 @@ def login_screen():
     name_entry.place(relx=0.5, rely=0.4, anchor=CENTER)
     name_label = Label(root, text="Username", font=("Helvetica", 11))
     name_label.place(relx=0.5, rely=0.3, anchor=CENTER)
-    enter_button = Button(root, text="Join the game!", command = main_menu)#command=partial(join_game, name_var)
+    enter_button = Button(root, text="Join the game!", command=partial(join_game, name_var))#command=partial(join_game, name_var)
     enter_button.place(relx=0.5, rely=0.5, anchor=CENTER)
     root.mainloop()
 
@@ -271,10 +273,10 @@ def main_menu():
     global root
     try:
         root.destroy()
-        main_menu_window = Tk()
     except:
-        main_menu_window = Tk()
+        pass
     global game_status, name_var
+    main_menu_window = Tk()
     #last_game_status = join_game(name_var)
     main_menu_window.title("MAIN MENU")
     main_menu_window.geometry("400x400")
@@ -305,13 +307,15 @@ def communicate_with_server():
         game_status = connection.call_server(
             "1:" + str(last_x) + "," + str(last_y) + "," + str(player.angle) + "," + str(
                 player.is_shooting))
+        if game_status[0] == 'E':
+            print('ERROR')
         players = game_status.split(";")[2:-1]
         for pl in players:
             player_data = pl.split(',')
             if player_data[1] == player.name:
                 if abs(last_x - float(player_data[4])) > 1:
                     player.pos_x =  float(player_data[4])
-                    print('cos')
+                    #print('cos')
                 if abs(last_y - float(player_data[5])) > 1:
                     player.pos_y = float(player_data[5])
     connection.call_server("2")
