@@ -259,17 +259,17 @@ def join_game(name_var, address, port, error_label):
     try:
         connection.connect(str(address.get()), int(port.get()))
     except:
-        error_label.config(text="There is a problem with server, try again later")
+        error_label.config(text="Could not connect to server")
         return False
     try:
         response = connection.call_server(name_var.get())
         if response[0] == 'd':
-            error_label.config(text=response)
+            error_label.config(text='Name contains non-alphanumeric characters or is already taken')
         else:
             root.destroy()
             player.name = name_var.get()
     except:
-        error_label.config(text="There is a problem with server, try again later")
+        error_label.config(text="Could not connect to server")
         return False
     return True
 
